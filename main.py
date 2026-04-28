@@ -1,12 +1,14 @@
 import cv2
 from face_landmarker import FaceLandmarker
 from visualizer import Visualizer
-from eye_utils import *
+from eye_utils import EyeUtils, LEFT_EYE_TOP, LEFT_EYE_BOTTOM, LEFT_EYE_TOP2, LEFT_EYE_BOTTOM2, LEFT_EYE_LEFT, LEFT_EYE_RIGHT, RIGHT_EYE_TOP, RIGHT_EYE_BOTTOM, RIGHT_EYE_TOP2, RIGHT_EYE_BOTTOM2, RIGHT_EYE_LEFT, RIGHT_EYE_RIGHT
+from gestures import GestureDetector
 
 def main():
     landmarker = FaceLandmarker(model_path="models/face_landmarker.task")
     visualizer = Visualizer()
     eye_utils = EyeUtils()
+    gesture_detector = GestureDetector()
 
     cap = cv2.VideoCapture(0)
     if not cap.isOpened():
@@ -36,6 +38,10 @@ def main():
                 RIGHT_EYE_TOP, RIGHT_EYE_BOTTOM,
                 RIGHT_EYE_TOP2, RIGHT_EYE_BOTTOM2,
                 RIGHT_EYE_LEFT, RIGHT_EYE_RIGHT, w, h)
+            
+            gesture = gesture_detector.update(left_ear, right_ear)
+            if gesture:
+                print(f"GESTURE DETECTED: {gesture}")
 
         frame = visualizer.draw_landmarks(frame, result)
         cv2.imshow("Eye Tracker", frame)

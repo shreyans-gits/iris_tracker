@@ -1,5 +1,6 @@
 import cv2
 from face_landmarker import FaceLandmarker
+import time
 
 class Visualizer:
     def __init__(self):
@@ -11,6 +12,9 @@ class Visualizer:
         self.COLOR_CLOUD = (200,200,200)
         self.COLOR_EYES = (255,255,0)
         self.COLOR_IRIS = (0,255,0)
+
+        self.last_gesture = None
+        self.gesture_timer = 0.0
 
     def draw_landmarks(self, frame, detection_result):
         if not detection_result or not detection_result.face_landmarks:
@@ -35,3 +39,41 @@ class Visualizer:
 
         return frame
 
+    def draw_EAR(self, frame, left_ear, right_ear):
+        LEFT  = f"RIGHT EAR: {left_ear:.2f}"
+        RIGHT = f"LEFT  EAR: {right_ear:.2f}"
+        open_color = (0, 255, 0)
+        closed_color = (0, 0, 255)
+
+        if left_ear<0.15:
+            l_color = closed_color
+        else:
+            l_color = open_color
+
+        if right_ear<0.15:
+            r_color = closed_color
+        else:
+            r_color = open_color
+
+        cv2.putText(frame, LEFT, (20, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.6, l_color, 2)
+        cv2.putText(frame, RIGHT, (20, 70), cv2.FONT_HERSHEY_SIMPLEX, 0.6, r_color, 2)
+        
+        return frame
+
+    def draw_gesture(self, frame, gesture):
+        if gesture is not None:
+            self.last_gesture = gesture
+            self.gesture_timer = time.time()
+
+        if self.last_gesture is None:
+            return frame
+        
+        if time.time() - self.gesture_timer > 1.0:
+            self.last_gesture = None
+            return frame
+
+        frame_width = frame.shape[1]
+        pos = (frame_width // 2 - 100, 40)
+        
+        cv2.putText(frame, self.last_gesture, pos, cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 255, 255), 2)
+        return frame

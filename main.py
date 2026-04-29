@@ -11,11 +11,16 @@ def main():
     gesture_detector = GestureDetector()
 
     cap = cv2.VideoCapture(0)
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
     if not cap.isOpened():
         print("Camera Not Opened")
         return
     
     print("Starting Eye Tracker... Press 'q' to quit.")
+    window_name = "Eye Tracker"
+    cv2.namedWindow("Iris Tracker", cv2.WINDOW_NORMAL)
+    cv2.setWindowProperty("Iris Tracker", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
     while True:
         ret, frame = cap.read()
         if not ret:
@@ -42,9 +47,11 @@ def main():
             gesture = gesture_detector.update(left_ear, right_ear)
             if gesture:
                 print(f"GESTURE DETECTED: {gesture}")
+            visualizer.draw_EAR(frame, left_ear, right_ear)
+            visualizer.draw_gesture(frame, gesture)
 
         frame = visualizer.draw_landmarks(frame, result)
-        cv2.imshow("Eye Tracker", frame)
+        cv2.imshow("Iris Tracker", frame)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 

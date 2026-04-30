@@ -20,6 +20,9 @@ RIGHT_EYE_BOTTOM_POINT = 145
 HORIZONTAL_THRESHOLD = 0.40   # iris ratio below this = looking left/right
 VERTICAL_THRESHOLD   = 0.40   # iris ratio below this = looking up/down
 
+#NOSE
+NOSE_TIP = 1
+
 class GazeDetector:
     def __init__(self):
         self.gaze = "CENTER"
@@ -44,35 +47,37 @@ class GazeDetector:
         else:
             h_ratio = iris_offset_x / eye_width
 
-        eye_height = bottom_px[1] - top_px[1]
-        iris_offset_y = iris_px[1] - top_px[1]
-        if eye_height == 0:
+        return h_ratio
+    
+    def get_head_vertical_ratio(self, landmarks, w, h):
+        all_y = [lm.y for lm in landmarks]
+        face_top    = min(all_y)
+        face_bottom = max(all_y)
+        nose_y = landmarks[NOSE_TIP].y
+        face_height = face_bottom - face_top
+        if face_height == 0:
             v_ratio = 0.5
         else:
-            v_ratio = iris_offset_y / eye_height
+            v_ratio = (nose_y - face_top) / face_height
 
-        return h_ratio,v_ratio
+        return v_ratio
 
     def get_gaze(self, landmarks, w, h):
-        l_h, l_v = self.get_iris_ratio(landmarks, LEFT_IRIS_CENTER, LEFT_EYE_LEFT_CORNER, 
+        l_h = self.get_iris_ratio(landmarks, LEFT_IRIS_CENTER, LEFT_EYE_LEFT_CORNER, 
                                        LEFT_EYE_RIGHT_CORNER, LEFT_EYE_TOP_POINT, LEFT_EYE_BOTTOM_POINT, w, h)
         
-        r_h, r_v = self.get_iris_ratio(landmarks, RIGHT_IRIS_CENTER, RIGHT_EYE_LEFT_CORNER, 
+        r_h = self.get_iris_ratio(landmarks, RIGHT_IRIS_CENTER, RIGHT_EYE_LEFT_CORNER, 
                                        RIGHT_EYE_RIGHT_CORNER, RIGHT_EYE_TOP_POINT, RIGHT_EYE_BOTTOM_POINT, w, h)
         
         h_ratio = (l_h + r_h) / 2
-        v_ratio = (l_v + r_v) / 2
+        v_ratio = self.get_head_vertical_ratio(landmarks, w, h)
 
-        if v_ratio < VERTICAL_THRESHOLD:
-            gaze = "UP"
-        elif v_ratio > (1 - VERTICAL_THRESHOLD):
-            gaze = "DOWN"
-        elif h_ratio < HORIZONTAL_THRESHOLD:
-            gaze = "LEFT"
-        elif h_ratio > (1 - HORIZONTAL_THRESHOLD):
+        if h_ratio < HORIZONTAL_THRESHOLD:
             gaze = "RIGHT"
+        elif h_ratio > (1 - HORIZONTAL_THRESHOLD):
+            gaze = "LEFT"
         else:
             gaze = "CENTER"
 
         self.gaze = gaze
-        return gaze
+        return h_ratio, v_ratio

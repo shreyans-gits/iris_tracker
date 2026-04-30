@@ -77,3 +77,9 @@ class Visualizer:
         
         cv2.putText(frame, self.last_gesture, pos, cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 255, 255), 2)
         return frame
+    
+    def draw_gaze(self,frame,gaze):
+        GAZE = f"Gaze Direction : {gaze}"
+        color = (255, 191, 0)
+        cv2.putText(frame, GAZE, (20, 110), cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
+        return frame

@@ -2,14 +2,8 @@ import pyautogui as pag
 import time
 import cv2
 
-# Your personal calibration values from testing
-H_MIN = 0.29
-H_MAX = 0.64
-V_MIN = 0.45
-V_MAX = 0.62
-
 # Smoothing
-SMOOTH_FACTOR = 0.05   # lower = smoother but slower, higher = faster but jittery
+SMOOTH_FACTOR = 0.1   # lower = smoother but slower, higher = faster but jittery
 
 # Click cooldown
 CLICK_COOLDOWN = 1.0  # seconds between clicks
@@ -35,7 +29,7 @@ def calibrate(cap, landmarker, gaze_detector, eye_utils, w, h):
                 cv2.putText(frame, "Press SPACE to capture", (30, 90),
                             cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
                 
-                cv2.imshow("Iris Tracker", frame)
+                cv2.imshow("Calibrate", frame)
                 
                 key = cv2.waitKey(1) & 0xFF
                 if key == ord(' '):
@@ -65,6 +59,7 @@ def calibrate(cap, landmarker, gaze_detector, eye_utils, w, h):
         print(f"Calibration complete:")
         print(f"H_MIN: {h_min:.3f}  H_MAX: {h_max:.3f}")
         print(f"V_MIN: {v_min:.3f}  V_MAX: {v_max:.3f}")
+        cv2.destroyWindow("Calibrate")
         return h_min, h_max, v_min, v_max
 
 class CursorController:
@@ -80,7 +75,7 @@ class CursorController:
         pag.FAILSAFE = False  # prevents pyautogui from raising exception at screen corners
 
     def move(self, h_ratio, v_ratio):
-        h_ratio = 1 - h_ratio
+        # h_ratio = 1 - h_ratio
 
         h_clamped = (h_ratio - self.H_MIN) / (self.H_MAX - self.H_MIN)
         v_clamped = (v_ratio - self.V_MIN) / (self.V_MAX - self.V_MIN)

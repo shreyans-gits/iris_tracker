@@ -9,10 +9,13 @@ V_MIN = 0.45
 V_MAX = 0.62
 
 # Smoothing
-SMOOTH_FACTOR = 0.2   # lower = smoother but slower, higher = faster but jittery
+SMOOTH_FACTOR = 0.05   # lower = smoother but slower, higher = faster but jittery
 
 # Click cooldown
 CLICK_COOLDOWN = 1.0  # seconds between clicks
+
+DEADZONE = 0.08      # ignore small movements near center
+SENSITIVITY = 1.8    # stretch the range outward
 
 def calibrate(cap, landmarker, gaze_detector, eye_utils, w, h):
         CALIBRATION_POINTS = [
@@ -50,11 +53,18 @@ def calibrate(cap, landmarker, gaze_detector, eye_utils, w, h):
         h_max = max(h_vals)
         v_min = min(v_vals)
         v_max = max(v_vals)
-        padding = 0.02
-        h_min -= padding
-        h_max += padding
-        v_min -= padding
-        v_max += padding
+
+        h_center = (h_min + h_max) / 2
+        v_center = (v_min + v_max) / 2
+
+        h_min = h_center - 0.12
+        h_max = h_center + 0.12
+        v_min = v_center - 0.10
+        v_max = v_center + 0.10
+
+        print(f"Calibration complete:")
+        print(f"H_MIN: {h_min:.3f}  H_MAX: {h_max:.3f}")
+        print(f"V_MIN: {v_min:.3f}  V_MAX: {v_max:.3f}")
         return h_min, h_max, v_min, v_max
 
 class CursorController:
@@ -71,12 +81,30 @@ class CursorController:
 
     def move(self, h_ratio, v_ratio):
         h_ratio = 1 - h_ratio
+
         h_clamped = (h_ratio - self.H_MIN) / (self.H_MAX - self.H_MIN)
         v_clamped = (v_ratio - self.V_MIN) / (self.V_MAX - self.V_MIN)
+
         h_clamped = max(0.0, min(1.0, h_clamped))
         v_clamped = max(0.0, min(1.0, v_clamped))
-        target_x = int(h_clamped * self.screen_w)
-        target_y = int(v_clamped * self.screen_h)
+
+        # center both axes around 0.5
+        h_centered = h_clamped - 0.5
+        v_centered = v_clamped - 0.5
+
+        # apply deadzone
+        if abs(h_centered) < DEADZONE:
+            h_centered = 0
+        if abs(v_centered) < DEADZONE:
+            v_centered = 0
+
+        # apply sensitivity and re-center
+        h_final = max(0.0, min(1.0, (h_centered * SENSITIVITY) + 0.5))
+        v_final = max(0.0, min(1.0, (v_centered * SENSITIVITY) + 0.5))
+
+        target_x = int(h_final * self.screen_w)
+        target_y = int(v_final * self.screen_h)
+
         self.current_x += SMOOTH_FACTOR * (target_x - self.current_x)
         self.current_y += SMOOTH_FACTOR * (target_y - self.current_y)
         pag.moveTo(int(self.current_x), int(self.current_y))

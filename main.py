@@ -25,10 +25,10 @@ def main():
     h_min, h_max, v_min, v_max = calibrate(cap, landmarker, gaze_detector, eye_utils, w, h)
     cursor = CursorController(h_min, h_max, v_min, v_max)
     
-    print("Starting Iris Tracker... Press 'q' to quit.")
-    window_name = "Iris Tracker"
-    cv2.namedWindow("Iris Tracker", cv2.WINDOW_NORMAL)
-    cv2.setWindowProperty("Iris Tracker", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
+    print("Starting Head Script... Press 'q' to quit.")
+    window_name = "Head Script"
+    cv2.namedWindow("Head Script", cv2.WINDOW_NORMAL)
+    cv2.setWindowProperty("Head Script", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
 
     while True:
         ret, frame = cap.read()
@@ -69,7 +69,7 @@ def main():
                 cursor.right_click()
 
         frame = visualizer.draw_landmarks(frame, result)
-        cv2.imshow("Iris Tracker", frame)
+        cv2.imshow("Head Script", frame)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 

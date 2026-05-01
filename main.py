@@ -4,6 +4,7 @@ from visualizer import Visualizer
 from eye_utils import EyeUtils, LEFT_EYE_TOP, LEFT_EYE_BOTTOM, LEFT_EYE_TOP2, LEFT_EYE_BOTTOM2, LEFT_EYE_LEFT, LEFT_EYE_RIGHT, RIGHT_EYE_TOP, RIGHT_EYE_BOTTOM, RIGHT_EYE_TOP2, RIGHT_EYE_BOTTOM2, RIGHT_EYE_LEFT, RIGHT_EYE_RIGHT
 from gestures import GestureDetector
 from gaze import GazeDetector
+from cursor import CursorController, calibrate
 
 def main():
     landmarker = FaceLandmarker(model_path="models/face_landmarker.task")
@@ -15,14 +16,20 @@ def main():
     cap = cv2.VideoCapture(0)
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
+    w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     if not cap.isOpened():
         print("Camera Not Opened")
         return
+    
+    h_min, h_max, v_min, v_max = calibrate(cap, landmarker, gaze_detector, eye_utils, w, h)
+    cursor = CursorController(h_min, h_max, v_min, v_max)
     
     print("Starting Iris Tracker... Press 'q' to quit.")
     window_name = "Iris Tracker"
     cv2.namedWindow("Iris Tracker", cv2.WINDOW_NORMAL)
     cv2.setWindowProperty("Iris Tracker", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
+
     while True:
         ret, frame = cap.read()
         if not ret:
@@ -34,17 +41,17 @@ def main():
 
         if result.face_landmarks:
             landmarks = result.face_landmarks[0]
-            h, w, _ = frame.shape
+            frame_h, frame_w, _ = frame.shape
 
             left_ear = eye_utils.get_EAR(landmarks,
                 LEFT_EYE_TOP, LEFT_EYE_BOTTOM,
                 LEFT_EYE_TOP2, LEFT_EYE_BOTTOM2,
-                LEFT_EYE_LEFT, LEFT_EYE_RIGHT, w, h)
+                LEFT_EYE_LEFT, LEFT_EYE_RIGHT, frame_w, frame_h)
 
             right_ear = eye_utils.get_EAR(landmarks,
                 RIGHT_EYE_TOP, RIGHT_EYE_BOTTOM,
                 RIGHT_EYE_TOP2, RIGHT_EYE_BOTTOM2,
-                RIGHT_EYE_LEFT, RIGHT_EYE_RIGHT, w, h)
+                RIGHT_EYE_LEFT, RIGHT_EYE_RIGHT, frame_w, frame_h)
             
             gesture = gesture_detector.update(left_ear, right_ear)
             if gesture:
@@ -52,11 +59,17 @@ def main():
             visualizer.draw_EAR(frame, left_ear, right_ear)
             visualizer.draw_gesture(frame, gesture)
 
-            h_ratio, v_ratio = gaze_detector.get_gaze(landmarks, w, h)
+            h_ratio, v_ratio = gaze_detector.get_gaze(landmarks, frame_w, frame_h)
             visualizer.draw_gaze(frame, h_ratio, v_ratio)
 
-        cv2.imshow("Iris Tracker", frame)
+            cursor.move(h_ratio, v_ratio)
+            if gesture == "RIGHT_WINK":
+                cursor.left_click()
+            elif gesture == "LEFT_WINK":
+                cursor.right_click()
+
         frame = visualizer.draw_landmarks(frame, result)
+        cv2.imshow("Iris Tracker", frame)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 

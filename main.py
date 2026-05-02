@@ -68,6 +68,12 @@ def main():
             elif gesture == "LEFT_WINK":
                 cursor.right_click()
 
+            freeze_changed = gesture_detector.check_freeze(left_ear, right_ear)
+            if freeze_changed is not None:
+                cursor.frozen = freeze_changed
+
+            visualizer.draw_freeze_state(frame, cursor.frozen)
+
         frame = visualizer.draw_landmarks(frame, result)
         cv2.imshow("Head Script", frame)
         if cv2.waitKey(1) & 0xFF == ord('q'):

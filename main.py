@@ -63,6 +63,7 @@ def main():
             visualizer.draw_gaze(frame, h_ratio, v_ratio)
 
             cursor.move(h_ratio, v_ratio)
+            cursor.scroll(v_ratio)
             if gesture == "RIGHT_WINK":
                 cursor.left_click()
             elif gesture == "LEFT_WINK":

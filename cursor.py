@@ -3,13 +3,13 @@ import time
 import cv2
 
 # Smoothing
-SMOOTH_FACTOR = 0.1   # lower = smoother but slower, higher = faster but jittery
+SMOOTH_FACTOR = 0.1
 
 # Click cooldown
-CLICK_COOLDOWN = 1.0  # seconds between clicks
+CLICK_COOLDOWN = 1.0
 
-DEADZONE = 0.08      # ignore small movements near center
-SENSITIVITY = 1.8    # stretch the range outward
+DEADZONE = 0.08
+SENSITIVITY = 1.8
 
 def calibrate(cap, landmarker, gaze_detector, eye_utils, w, h):
         CALIBRATION_POINTS = [
@@ -72,28 +72,26 @@ class CursorController:
         self.current_x = self.screen_w // 2
         self.current_y = self.screen_h // 2
         self.last_click_time = 0.0
-        pag.FAILSAFE = False  # prevents pyautogui from raising exception at screen corners
+        pag.FAILSAFE = False
+        self.frozen = False
 
     def move(self, h_ratio, v_ratio):
-        # h_ratio = 1 - h_ratio
-
+        if self.frozen:
+            return
         h_clamped = (h_ratio - self.H_MIN) / (self.H_MAX - self.H_MIN)
         v_clamped = (v_ratio - self.V_MIN) / (self.V_MAX - self.V_MIN)
 
         h_clamped = max(0.0, min(1.0, h_clamped))
         v_clamped = max(0.0, min(1.0, v_clamped))
 
-        # center both axes around 0.5
         h_centered = h_clamped - 0.5
         v_centered = v_clamped - 0.5
 
-        # apply deadzone
         if abs(h_centered) < DEADZONE:
             h_centered = 0
         if abs(v_centered) < DEADZONE:
             v_centered = 0
 
-        # apply sensitivity and re-center
         h_final = max(0.0, min(1.0, (h_centered * SENSITIVITY) + 0.5))
         v_final = max(0.0, min(1.0, (v_centered * SENSITIVITY) + 0.5))
 
@@ -113,3 +111,6 @@ class CursorController:
         if time.time() - self.last_click_time > CLICK_COOLDOWN:
             pag.rightClick()
             self.last_click_time = time.time()
+
+    def toggle_freeze(self):
+        self.frozen = not self.frozen

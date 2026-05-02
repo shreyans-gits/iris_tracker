@@ -83,3 +83,16 @@ class Visualizer:
         color = (255, 191, 0)
         cv2.putText(frame, text, (20, 110), cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
         return frame
+    
+    def draw_freeze_state(self, frame, frozen):
+        if frozen:
+            text = "FROZEN"
+            color = (0, 0, 255)    # red
+        else:
+            text = "ACTIVE"
+            color = (0, 255, 0)    # green
+        
+        frame_w = frame.shape[1]
+        cv2.putText(frame, text, (frame_w - 120, 40),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.8, color, 2)
+        return frame

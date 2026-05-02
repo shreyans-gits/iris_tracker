@@ -2,14 +2,15 @@ import pyautogui as pag
 import time
 import cv2
 
-# Smoothing
 SMOOTH_FACTOR = 0.1
 
-# Click cooldown
 CLICK_COOLDOWN = 1.0
 
 DEADZONE = 0.08
 SENSITIVITY = 1.8
+SCROLL_ZONE = 0.10
+SCROLL_AMOUNT = 50
+SCROLL_COOLDOWN = 0.3
 
 def calibrate(cap, landmarker, gaze_detector, eye_utils, w, h):
         CALIBRATION_POINTS = [
@@ -74,6 +75,8 @@ class CursorController:
         self.last_click_time = 0.0
         pag.FAILSAFE = False
         self.frozen = False
+        self.last_scroll_time = 0.0
+        self.scroll_active = False
 
     def move(self, h_ratio, v_ratio):
         if self.frozen:
@@ -114,3 +117,17 @@ class CursorController:
 
     def toggle_freeze(self):
         self.frozen = not self.frozen
+
+    def scroll(self, v_ratio=None):
+        if v_ratio is None:
+            return
+        
+        if time.time() - self.last_scroll_time < SCROLL_COOLDOWN:
+            return
+
+        if v_ratio < 0.40:
+            pag.scroll(SCROLL_AMOUNT, x=int(self.current_x), y=int(self.current_y))
+            self.last_scroll_time = time.time()
+        elif v_ratio > 0.60:
+            pag.scroll(-SCROLL_AMOUNT, x=int(self.current_x), y=int(self.current_y))
+            self.last_scroll_time = time.time()

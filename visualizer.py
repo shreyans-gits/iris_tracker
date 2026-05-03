@@ -38,28 +38,34 @@ class Visualizer:
 
         return frame
 
-    def draw_EAR(self, frame, left_ear, right_ear):
-        LEFT  = f"RIGHT EAR: {left_ear:.2f}"
-        RIGHT = f"LEFT  EAR: {right_ear:.2f}"
-        open_color = (0, 255, 0)
-        closed_color = (0, 0, 255)
+    # def draw_EAR(self, frame, left_ear, right_ear):
+    #     LEFT  = f"RIGHT EAR: {left_ear:.2f}"
+    #     RIGHT = f"LEFT  EAR: {right_ear:.2f}"
+    #     open_color = (0, 255, 0)
+    #     closed_color = (0, 0, 255)
 
-        if left_ear<0.15:
-            l_color = closed_color
-        else:
-            l_color = open_color
+    #     if left_ear<0.15:
+    #         l_color = closed_color
+    #     else:
+    #         l_color = open_color
 
-        if right_ear<0.15:
-            r_color = closed_color
-        else:
-            r_color = open_color
+    #     if right_ear<0.15:
+    #         r_color = closed_color
+    #     else:
+    #         r_color = open_color
 
-        cv2.putText(frame, LEFT, (20, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.6, l_color, 2)
-        cv2.putText(frame, RIGHT, (20, 70), cv2.FONT_HERSHEY_SIMPLEX, 0.6, r_color, 2)
+    #     cv2.putText(frame, LEFT, (20, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.6, l_color, 2)
+    #     cv2.putText(frame, RIGHT, (20, 70), cv2.FONT_HERSHEY_SIMPLEX, 0.6, r_color, 2)
         
-        return frame
+    #     return frame
 
     def draw_gesture(self, frame, gesture):
+        GESTURE_LABELS = {
+            "BLINK": "BLINK",
+            "LEFT_WINK": "RIGHT CLICK",
+            "RIGHT_WINK": "LEFT CLICK",
+        }
+
         if gesture is not None:
             self.last_gesture = gesture
             self.gesture_timer = time.time()
@@ -73,25 +79,25 @@ class Visualizer:
 
         frame_width = frame.shape[1]
         pos = (frame_width // 2 - 100, 40)
-        
-        cv2.putText(frame, self.last_gesture, pos, cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 255, 255), 2)
+
+        label = GESTURE_LABELS.get(self.last_gesture, self.last_gesture)
+        cv2.putText(frame, label, pos, cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 255, 255), 2)
         return frame
     
-    def draw_gaze(self,frame,h_ratio,v_ratio):
-        text = f"Gaze  H: {h_ratio:.2f}  V: {v_ratio:.2f}"
-        color = (255, 191, 0)
-        cv2.putText(frame, text, (20, 110), cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
-        return frame
+    # def draw_gaze(self,frame,h_ratio,v_ratio):
+    #     text = f"Gaze  H: {h_ratio:.2f}  V: {v_ratio:.2f}"
+    #     color = (255, 191, 0)
+    #     cv2.putText(frame, text, (20, 110), cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
+    #     return frame
     
     def draw_freeze_state(self, frame, frozen):
         if frozen:
-            text = "FROZEN"
-            color = (0, 0, 255)    # red
+            text = "|| FROZEN"
+            color = (0, 0, 255)
+            # draw a semi-transparent red border around frame
+            cv2.rectangle(frame, (0, 0), (frame.shape[1]-1, frame.shape[0]-1), color, 8)
         else:
-            text = "ACTIVE"
-            color = (0, 255, 0)    # green
-        
-        frame_w = frame.shape[1]
-        cv2.putText(frame, text, (frame_w - 120, 40),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.8, color, 2)
+            text = "> ACTIVE"
+            color = (0, 255, 0)
+        cv2.putText(frame, text, (20, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.8, color, 2)
         return frame

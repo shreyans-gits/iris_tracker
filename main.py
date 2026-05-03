@@ -53,11 +53,9 @@ def main():
                 RIGHT_EYE_LEFT, RIGHT_EYE_RIGHT, frame_w, frame_h)
             
             gesture = gesture_detector.update(left_ear, right_ear)
-            visualizer.draw_EAR(frame, left_ear, right_ear)
             visualizer.draw_gesture(frame, gesture)
 
             h_ratio, v_ratio = gaze_detector.get_gaze(landmarks, frame_w, frame_h)
-            visualizer.draw_gaze(frame, h_ratio, v_ratio)
 
             cursor.move(h_ratio, v_ratio)
             cursor.scroll(v_ratio)

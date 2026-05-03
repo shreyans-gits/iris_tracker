@@ -1,5 +1,4 @@
 import cv2
-from face_landmarker import FaceLandmarker
 import time
 
 class Visualizer:

@@ -26,7 +26,6 @@ def main():
     cursor = CursorController(h_min, h_max, v_min, v_max)
     
     print("Starting Head Script... Press 'q' to quit.")
-    window_name = "Head Script"
     cv2.namedWindow("Head Script", cv2.WINDOW_NORMAL)
     cv2.setWindowProperty("Head Script", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
 
@@ -54,8 +53,6 @@ def main():
                 RIGHT_EYE_LEFT, RIGHT_EYE_RIGHT, frame_w, frame_h)
             
             gesture = gesture_detector.update(left_ear, right_ear)
-            if gesture:
-                print(f"GESTURE DETECTED: {gesture}")
             visualizer.draw_EAR(frame, left_ear, right_ear)
             visualizer.draw_gesture(frame, gesture)
 
